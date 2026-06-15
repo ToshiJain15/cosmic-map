@@ -4,9 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Adhaidvipa — The Cosmic Architecture</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" as="script" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Cinzel+Decorative:wght@400&family=Cinzel:wght@400&family=Inter:wght@400&display=swap&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════
    TOKENS
@@ -453,7 +456,10 @@ a { color: inherit; text-decoration: none; }
 <div id="loading">
   <div class="load-mandala"></div>
   <div class="load-title">॥ Adhaidvipa ॥</div>
-  <div class="load-sub">Rendering the Cosmos</div>
+  <div class="load-sub" id="load-status">Loading Three.js...</div>
+  <div style="width:200px;height:2px;background:rgba(201,168,76,0.15);border-radius:2px;margin-top:16px;">
+    <div id="load-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#7A6030,#F5D376);border-radius:2px;transition:width 0.4s ease;"></div>
+  </div>
 </div>
 
 <!-- THREE.JS CANVAS -->
@@ -1199,9 +1205,20 @@ window.addEventListener('resize',()=>{
 // ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
-setView('overview');
-animate();
-setTimeout(()=>document.getElementById('loading').classList.add('out'),900);
+function setLoadProgress(pct, msg) {
+  const bar = document.getElementById('load-bar');
+  const status = document.getElementById('load-status');
+  if (bar) bar.style.width = pct + '%';
+  if (status) status.textContent = msg;
+}
+setLoadProgress(60, 'Building cosmic geometry...');
+setTimeout(() => setLoadProgress(80, 'Placing stars & galaxies...'), 100);
+setTimeout(() => {
+  setLoadProgress(100, 'Ready.');
+  setView('overview');
+  animate();
+  setTimeout(() => document.getElementById('loading').classList.add('out'), 400);
+}, 300);
 </script>
 </body>
 </html>
