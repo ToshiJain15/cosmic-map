@@ -448,6 +448,7 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 900px) {
   #mobile-tabs { display: grid; }
   .hud-bottom { bottom: 80px; }
+  #genesis-panel { bottom: 90px !important; }
 }
 </style>
 </head>
@@ -507,6 +508,7 @@ a { color: inherit; text-decoration: none; }
     <button class="nav-tab" onclick="setView('yantra')">Sri Yantra</button>
     <button class="nav-tab" onclick="setView('galaxy')">Galaxy</button>
     <button class="nav-tab" onclick="setView('connect')">Connect</button>
+    <button class="nav-tab" onclick="setView('genesis')">✦ Genesis</button>
   </div>
   <button class="nav-hamburger" onclick="toggleDrawer()" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -521,6 +523,7 @@ a { color: inherit; text-decoration: none; }
   <button class="mobile-tab" onclick="setView('yantra');toggleDrawer()">⬡ Sri Yantra</button>
   <button class="mobile-tab" onclick="setView('galaxy');toggleDrawer()">✧ Galaxy</button>
   <button class="mobile-tab" onclick="setView('connect');toggleDrawer()">∞ Connect</button>
+  <button class="mobile-tab" onclick="setView('genesis');toggleDrawer()">✦ Genesis — How It's Built</button>
 </div>
 
 <!-- HUD LEFT -->
@@ -573,6 +576,20 @@ a { color: inherit; text-decoration: none; }
   <button class="mob-tab" onclick="setView('yantra')"><div class="mob-tab-icon">⬡</div>Yantra</button>
   <button class="mob-tab" onclick="setView('galaxy')"><div class="mob-tab-icon">✧</div>Galaxy</button>
   <button class="mob-tab" onclick="setView('connect')"><div class="mob-tab-icon">∞</div>Connect</button>
+</div>
+
+<!-- GENESIS NARRATION PANEL -->
+<div class="hud" id="genesis-panel" style="display:none; top:auto; bottom:100px; left:50%; transform:translateX(-50%); width:min(640px, calc(100vw - 32px));">
+  <div class="glass-card" style="text-align:center;">
+    <div class="card-eyebrow" id="genesis-step-label">Step 1 / 7</div>
+    <div class="card-title" id="genesis-step-title" style="font-size:18px;">The Void Before Form</div>
+    <div class="card-body" id="genesis-step-desc">Before anything exists, there is only the unmanifest — pure potential.</div>
+    <div style="display:flex; gap:8px; justify-content:center; margin-top:14px; pointer-events:auto;">
+      <button onclick="genesisPrev()" style="padding:8px 18px;border:1px solid var(--border);border-radius:30px;color:var(--gold);font-family:'Inter',sans-serif;font-size:11px;letter-spacing:1px;">← Prev</button>
+      <button onclick="genesisToggleAuto()" id="genesis-auto-btn" style="padding:8px 18px;border:1px solid var(--gold-mid);background:rgba(201,168,76,0.12);border-radius:30px;color:var(--gold-bright);font-family:'Inter',sans-serif;font-size:11px;letter-spacing:1px;">⏸ Pause</button>
+      <button onclick="genesisNext()" style="padding:8px 18px;border:1px solid var(--border);border-radius:30px;color:var(--gold);font-family:'Inter',sans-serif;font-size:11px;letter-spacing:1px;">Next →</button>
+    </div>
+  </div>
 </div>
 
 <!-- CONTROLS HINT -->
@@ -686,6 +703,7 @@ const G={
   yan:new THREE.Group(),
   gal:new THREE.Group(),
   con:new THREE.Group(),
+  gen:new THREE.Group(),
 };
 Object.values(G).forEach(g=>scene.add(g));
 
@@ -996,6 +1014,224 @@ buildConnect();
 G.con.visible=false;
 
 // ══════════════════════════════════════════════
+// GENESIS — animated step-by-step construction
+// ══════════════════════════════════════════════
+// Each step reveals a new geometric layer with a caption explaining
+// what it is and what it conveys. Steps build cumulatively like a
+// time-lapse of creation: Bindu -> Yantra -> Meru -> Adhaidvipa rings
+// -> Madhya Loka -> Heavens -> Hells -> Siddha-shila -> Galaxy.
+
+const genesisObjects = []; // {mesh, appearAt (0-1 of step), step}
+let genesisStep = 0;
+let genesisAuto = true;
+let genesisClock = 0;
+const GENESIS_STEP_DURATION = 6.5; // seconds per step before auto-advance
+
+function gAdd(mesh, step, scaleTarget) {
+  mesh.scale.setScalar(0.001);
+  mesh.userData.genStep = step;
+  mesh.userData.genScaleTarget = scaleTarget !== undefined ? scaleTarget : 1;
+  G.gen.add(mesh);
+  genesisObjects.push(mesh);
+  return mesh;
+}
+
+// STEP 0 — Bindu: the seed point
+const genBindu = new THREE.Mesh(
+  new THREE.SphereGeometry(0.3, 24, 24),
+  new THREE.MeshStandardMaterial({color:0x3ED8B8, emissive:0x3ED8B8, emissiveIntensity:2.5})
+);
+gAdd(genBindu, 0);
+const genBinduLight = new THREE.PointLight(0x3ED8B8, 4, 10);
+G.gen.add(genBinduLight);
+
+// STEP 1 — First triangle pair emerges from Bindu (Shiva up / Shakti down)
+const genT1Up = (() => {
+  const shape = new THREE.Shape();
+  shape.moveTo(0,1.4); shape.lineTo(-1.2,-0.7); shape.lineTo(1.2,-0.7); shape.closePath();
+  const geo = new THREE.ShapeGeometry(shape);
+  const mat = new THREE.MeshStandardMaterial({color:0xB39DDB, emissive:0xB39DDB, emissiveIntensity:0.5, transparent:true, opacity:0.55, side:THREE.DoubleSide, depthWrite:false});
+  const m = new THREE.Mesh(geo, mat);
+  m.rotation.x = -Math.PI/2;
+  return m;
+})();
+const genT1Down = (() => {
+  const shape = new THREE.Shape();
+  shape.moveTo(0,-1.4); shape.lineTo(-1.2,0.7); shape.lineTo(1.2,0.7); shape.closePath();
+  const geo = new THREE.ShapeGeometry(shape);
+  const mat = new THREE.MeshStandardMaterial({color:0xE04F7B, emissive:0xE04F7B, emissiveIntensity:0.5, transparent:true, opacity:0.55, side:THREE.DoubleSide, depthWrite:false});
+  const m = new THREE.Mesh(geo, mat);
+  m.rotation.x = -Math.PI/2;
+  return m;
+})();
+gAdd(genT1Up, 1);
+gAdd(genT1Down, 1);
+
+// STEP 2 — Remaining triangles complete the Sri Yantra (9 total)
+const genYantraExtra = [];
+const hUpCol=[0x9575CD,0x7B4FE0,0x512DA8];
+const hDnCol=[0xC62828,0xB71C1C,0x7F0000,0x4a0000];
+for(let i=0;i<3;i++){
+  const r=2.0-i*0.5;
+  const shape=new THREE.Shape();
+  shape.moveTo(0,r);shape.lineTo(-r*0.866,-r*0.5);shape.lineTo(r*0.866,-r*0.5);shape.closePath();
+  const geo=new THREE.ShapeGeometry(shape);
+  const mat=new THREE.MeshStandardMaterial({color:hUpCol[i],emissive:hUpCol[i],emissiveIntensity:0.4,transparent:true,opacity:0.45,side:THREE.DoubleSide,depthWrite:false});
+  const m=new THREE.Mesh(geo,mat); m.rotation.x=-Math.PI/2;
+  genYantraExtra.push(m); gAdd(m,2);
+}
+for(let i=0;i<4;i++){
+  const r=2.2-i*0.45;
+  const shape=new THREE.Shape();
+  shape.moveTo(0,-r);shape.lineTo(-r*0.866,r*0.5);shape.lineTo(r*0.866,r*0.5);shape.closePath();
+  const geo=new THREE.ShapeGeometry(shape);
+  const mat=new THREE.MeshStandardMaterial({color:hDnCol[i],emissive:hDnCol[i],emissiveIntensity:0.4,transparent:true,opacity:0.45,side:THREE.DoubleSide,depthWrite:false});
+  const m=new THREE.Mesh(geo,mat); m.rotation.x=-Math.PI/2;
+  genYantraExtra.push(m); gAdd(m,2);
+}
+// Lotus rings + square (the Bhupura boundary)
+[2.6,3.0,3.4].forEach(r=>{
+  const m=new THREE.Mesh(new THREE.TorusGeometry(r,0.03,10,80),new THREE.MeshStandardMaterial({color:0xC9A84C,emissive:0xC9A84C,emissiveIntensity:0.5,transparent:true,opacity:0.4}));
+  m.rotation.x=Math.PI/2;
+  gAdd(m,2);
+});
+const genSq=new THREE.Line(
+  new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-3.8,0.02,-3.8),new THREE.Vector3(3.8,0.02,-3.8),new THREE.Vector3(3.8,0.02,3.8),new THREE.Vector3(-3.8,0.02,3.8),new THREE.Vector3(-3.8,0.02,-3.8)]),
+  new THREE.LineBasicMaterial({color:0xC9A84C,transparent:true,opacity:0.5})
+);
+gAdd(genSq,2);
+
+// STEP 3 — The Yantra rises into 3D: becomes Mount Meru (the same point, extruded)
+const genMeru = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.1,0.5,4.5,8),
+  new THREE.MeshStandardMaterial({color:0xFFD700,emissive:0xFFD700,emissiveIntensity:1.3,metalness:0.9,roughness:0.05})
+);
+gAdd(genMeru,3);
+const genMeruLight = new THREE.PointLight(0xFFD700,4,10);
+G.gen.add(genMeruLight);
+
+// STEP 4 — Adhaidvipa: 7 islands + 7 oceans ripple outward from Meru
+const genDvipaRings=[], genSamudraRings=[];
+DVIPAS.forEach((d,i)=>{
+  const m=new THREE.Mesh(new THREE.TorusGeometry(d.r*1.3,0.14,16,90),new THREE.MeshStandardMaterial({color:d.color,emissive:d.color,emissiveIntensity:0.5,metalness:0.3,roughness:0.4}));
+  m.rotation.x=Math.PI/2;
+  gAdd(m,4);
+  genDvipaRings.push(m);
+});
+SAMUDRAS.forEach((s,i)=>{
+  const m=new THREE.Mesh(new THREE.TorusGeometry(s.r*1.3,0.08,12,90),new THREE.MeshStandardMaterial({color:s.color,emissive:s.color,emissiveIntensity:0.35,transparent:true,opacity:0.8}));
+  m.rotation.x=Math.PI/2;
+  gAdd(m,4);
+  genSamudraRings.push(m);
+});
+
+// STEP 5 — Madhya Loka solidifies as the golden waist; Heavens rise above
+const genWaist = new THREE.Mesh(
+  new THREE.CylinderGeometry(2.0,2.0,0.55,50),
+  new THREE.MeshStandardMaterial({color:0xC9A84C,emissive:0xC9A84C,emissiveIntensity:0.8,metalness:0.6,roughness:0.2})
+);
+genWaist.position.y=0;
+gAdd(genWaist,5);
+
+const genHeavens=[];
+HEAVENS.forEach((h,i)=>{
+  const w=1.3-i*0.07;
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(w,w+0.1,0.6,40),new THREE.MeshStandardMaterial({color:h.color,emissive:h.color,emissiveIntensity:0.5,transparent:true,opacity:0.78}));
+  m.position.y=h.y*0.65;
+  gAdd(m,5);
+  genHeavens.push(m);
+});
+
+// STEP 6 — Hells descend below; Siddha-shila crowns the top — structure complete
+const genHells=[];
+HELLS.forEach((h,i)=>{
+  const w=1.3+i*0.1;
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(w+0.1,w,0.6,40),new THREE.MeshStandardMaterial({color:h.color,emissive:h.color,emissiveIntensity:0.45,transparent:true,opacity:0.78}));
+  m.position.y=h.y*0.65;
+  gAdd(m,6);
+  genHells.push(m);
+});
+const genSiddha = new THREE.Mesh(
+  new THREE.TorusGeometry(1.0,0.15,14,50,Math.PI),
+  new THREE.MeshStandardMaterial({color:0x3ED8B8,emissive:0x3ED8B8,emissiveIntensity:1.5})
+);
+genSiddha.position.y=7.6;
+gAdd(genSiddha,6);
+const genSiddhaLight = new THREE.PointLight(0x3ED8B8,3,10);
+genSiddhaLight.position.y=7.6;
+G.gen.add(genSiddhaLight);
+
+const GENESIS_STEPS = [
+  {
+    title:'The Bindu — Seed of All Creation',
+    desc:'Before form, before time, before space — there is only the Bindu. A single point of pure consciousness. Every triangle, every world, every galaxy will emerge from this one still centre.',
+    camera:{theta:0.3,phi:1.1,r:8}
+  },
+  {
+    title:'The First Polarity — Shiva & Shakti',
+    desc:'From the Bindu, the first duality emerges: an upward triangle (Shiva — consciousness, ascending) and a downward triangle (Shakti — energy, descending). This is the root of all heavens above and hells below.',
+    camera:{theta:0.3,phi:1.1,r:9}
+  },
+  {
+    title:'The Sri Yantra Completes — 9 Triangles, 43 Realms',
+    desc:'Four upward and five downward triangles interlock, creating 43 smaller triangles — each a distinct realm of existence. The lotus petals and square boundary (Bhupura) seal the diagram — the cosmos in geometry.',
+    camera:{theta:0.5,phi:0.9,r:12}
+  },
+  {
+    title:'The Yantra Rises — Mount Meru is Born',
+    desc:'When this flat diagram is lifted into three dimensions, the Bindu becomes the summit of Mount Meru — the golden axis mundi. Same point. Same truth. Now standing as the spine of the universe.',
+    camera:{theta:0.5,phi:0.85,r:10}
+  },
+  {
+    title:'Adhaidvipa Ripples Outward — 7 Islands, 7 Oceans',
+    desc:'From Mount Meru, concentric rings of land and water radiate outward — Jambudvipa, then Lavana ocean, then Dhatakikhanda, and on through seven islands and seven seas. This is the entire habitable cosmos — Adhaidvipa.',
+    camera:{theta:0.2,phi:0.5,r:16}
+  },
+  {
+    title:'The Waist Solidifies — Heavens Rise Above',
+    desc:'Madhya Loka — the human world — crystallises as a golden disc at the centre. Above it, seven heavens stack upward in ascending light and bliss, like the torso of a vast cosmic being reaching toward liberation.',
+    camera:{theta:0.4,phi:1.0,r:14}
+  },
+  {
+    title:'The Structure Completes — Hells Below, Siddha-shila Above',
+    desc:'Seven hells descend below the waist into increasing darkness — the legs of the cosmic man. At the very crown, the crescent Siddha-shila appears — the abode of liberated souls. The Loka Purusha now stands complete: the entire architecture of the universe, born from a single point.',
+    camera:{theta:0.4,phi:1.05,r:18}
+  },
+];
+
+genesisStep = 0;
+let genesisAutoTimer = null;
+
+function genesisRenderStep(){
+  const step = genesisStep;
+  genesisObjects.forEach(o=>{
+    o.userData.genVisible = o.userData.genStep <= step;
+  });
+  const cfg = GENESIS_STEPS[step];
+  document.getElementById('genesis-step-label').textContent = `Step ${step+1} / ${GENESIS_STEPS.length}`;
+  document.getElementById('genesis-step-title').textContent = cfg.title;
+  document.getElementById('genesis-step-desc').textContent = cfg.desc;
+  camTarget = {...cfg.camera};
+}
+
+function genesisNext(){
+  genesisStep = (genesisStep+1) % GENESIS_STEPS.length;
+  genesisClock = 0;
+  genesisRenderStep();
+}
+function genesisPrev(){
+  genesisStep = (genesisStep-1+GENESIS_STEPS.length) % GENESIS_STEPS.length;
+  genesisClock = 0;
+  genesisRenderStep();
+}
+function genesisToggleAuto(){
+  genesisAuto = !genesisAuto;
+  document.getElementById('genesis-auto-btn').textContent = genesisAuto ? '⏸ Pause' : '▶ Play';
+}
+
+G.gen.visible=false;
+
+// ══════════════════════════════════════════════
 // CAMERA ORBIT
 // ══════════════════════════════════════════════
 let sph={theta:0.3,phi:1.15,r:30};
@@ -1079,6 +1315,16 @@ const VIEWS={
     cam:{theta:0.3,phi:0.9,r:26},
     showLeft:false,showRight:true,showBottom:false,
   },
+  genesis:{
+    title:'Genesis',
+    desc:'Watch the universe build itself, one geometry at a time.',
+    eyebrow:'How Each Form Is Made',
+    info:'From the Bindu to the complete cosmic man — each step shows how one geometric idea gives rise to the next, and what it conveys about the nature of reality.',
+    groups:['gen'],
+    cam:{theta:0.3,phi:1.1,r:8},
+    showLeft:false,showRight:false,showBottom:false,
+    isGenesis:true,
+  },
 };
 
 let camTarget=null;
@@ -1089,19 +1335,16 @@ function setView(name){
   if(!cfg)return;
 
   // Update desktop tabs
-  document.querySelectorAll('.nav-tab').forEach((t,i)=>{
-    const keys=Object.keys(VIEWS);
-    t.classList.toggle('active',keys[i]===name);
+  document.querySelectorAll('.nav-tab').forEach((t)=>{
+    t.classList.toggle('active', t.getAttribute('onclick')===`setView('${name}')`);
   });
   // Mobile tabs
-  document.querySelectorAll('.mob-tab').forEach((t,i)=>{
-    const keys=Object.keys(VIEWS);
-    t.classList.toggle('active',keys[i]===name);
+  document.querySelectorAll('.mob-tab').forEach((t)=>{
+    t.classList.toggle('active', t.getAttribute('onclick')===`setView('${name}')`);
   });
   // Mobile drawer
-  document.querySelectorAll('.mobile-tab').forEach((t,i)=>{
-    const keys=Object.keys(VIEWS);
-    t.classList.toggle('active',keys[i]===name);
+  document.querySelectorAll('.mobile-tab').forEach((t)=>{
+    t.classList.toggle('active', (t.getAttribute('onclick')||'').indexOf(`setView('${name}')`)===0);
   });
 
   // Groups
@@ -1128,6 +1371,19 @@ function setView(name){
   document.getElementById('hud-left').style.display=cfg.showLeft?'block':'none';
   document.getElementById('hud-right').style.display=cfg.showRight?'block':'none';
   document.getElementById('hud-bottom').style.display=cfg.showBottom?'block':'none';
+
+  // Genesis panel
+  const genPanel=document.getElementById('genesis-panel');
+  if(cfg.isGenesis){
+    genPanel.style.display='block';
+    genesisStep=0;
+    genesisClock=0;
+    genesisAuto=true;
+    document.getElementById('genesis-auto-btn').textContent='⏸ Pause';
+    genesisRenderStep();
+  } else {
+    genPanel.style.display='none';
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -1197,6 +1453,32 @@ function animate(){
   goldPt.intensity=2+0.5*Math.sin(t*0.4);
   hvnPt.intensity=1.5+0.5*Math.sin(t*0.3);
   hllPt.intensity=1.5+0.5*Math.sin(t*0.35);
+
+  // Genesis — animate scale-in of revealed objects + auto advance
+  if(G.gen.visible){
+    const dt=clock.getDelta ? 0.016 : 0.016;
+    genesisClock += dt;
+    genesisObjects.forEach(o=>{
+      const target = o.userData.genVisible ? o.userData.genScaleTarget : 0.001;
+      const cur = o.scale.x;
+      const next = cur + (target-cur)*0.08;
+      o.scale.setScalar(next);
+      if(o.material) {
+        if(o.userData.genVisible){
+          o.material.emissiveIntensity = (o.material.userData_baseEmissive||0.5) + 0.3*Math.sin(t*1.5);
+        }
+      }
+    });
+    genBinduLight.intensity = 3+Math.sin(t*2)*1.5;
+    genMeruLight.intensity = (genesisStep>=3) ? 3+Math.sin(t*2)*1.5 : 0;
+    genSiddhaLight.intensity = (genesisStep>=6) ? 2.5+Math.sin(t*1.8)*1.5 : 0;
+    G.gen.rotation.y = t*0.05;
+
+    if(genesisAuto && genesisClock > GENESIS_STEP_DURATION){
+      genesisClock=0;
+      genesisNext();
+    }
+  }
 
   renderer.render(scene,camera);
 }
