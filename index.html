@@ -983,6 +983,47 @@ scene.fog=new THREE.FogExp2(0x04030A,0.016);
 const camera=new THREE.PerspectiveCamera(55,window.innerWidth/window.innerHeight,0.1,500);
 camera.position.set(0,6,30);
 
+// ══════════════════════════════════════════════
+// REAL TEXTURE IMAGES — loaded from three.js's own
+// CC0 example asset library, used to replace flat
+// procedural colour with actual photographic/painted
+// detail (soft glow discs, water ripples, grass/terrain,
+// embers) for a far less "cartoon-flat" look.
+// ══════════════════════════════════════════════
+const texLoader = new THREE.TextureLoader();
+const TEX = {
+  disc:    texLoader.load('textures/disc.png'),
+  circle:  texLoader.load('textures/circle.png'),
+  spark:   texLoader.load('textures/spark1.png'),
+  glowBall:texLoader.load('textures/ball.png'),
+  flare:   texLoader.load('textures/lensflare0.png'),
+  water:   texLoader.load('textures/water.jpg'),
+  terrain: texLoader.load('textures/grasslight-big.jpg'),
+  cloud:   texLoader.load('textures/cloud.png'),
+};
+TEX.water.wrapS = TEX.water.wrapT = THREE.RepeatWrapping;
+TEX.terrain.wrapS = TEX.terrain.wrapT = THREE.RepeatWrapping;
+TEX.cloud.wrapS = TEX.cloud.wrapT = THREE.RepeatWrapping;
+
+// Simple manual lens-flare: a soft core sprite + 2-3 fainter rings that
+// fade with distance — gives bright points (Meru, Bindu, deity) a real
+// photographic flare instead of a flat emissive sphere alone.
+function mkLensFlare(color, scale=2){
+  const group = new THREE.Group();
+  const core = new THREE.Sprite(new THREE.SpriteMaterial({map:TEX.flare,color,transparent:true,opacity:0.9,blending:THREE.AdditiveBlending,depthWrite:false}));
+  core.scale.set(scale,scale,1);
+  group.add(core);
+  const ring1 = new THREE.Sprite(new THREE.SpriteMaterial({map:TEX.disc,color,transparent:true,opacity:0.35,blending:THREE.AdditiveBlending,depthWrite:false}));
+  ring1.scale.set(scale*0.4,scale*0.4,1);
+  ring1.position.set(scale*0.5,scale*0.5,0);
+  group.add(ring1);
+  const ring2 = new THREE.Sprite(new THREE.SpriteMaterial({map:TEX.disc,color,transparent:true,opacity:0.2,blending:THREE.AdditiveBlending,depthWrite:false}));
+  ring2.scale.set(scale*0.2,scale*0.2,1);
+  ring2.position.set(scale*0.9,scale*0.9,0);
+  group.add(ring2);
+  return group;
+}
+
 // Lights
 scene.add(new THREE.AmbientLight(0x1a0a3d,0.8));
 const goldPt=new THREE.PointLight(0xC9A84C,2.5,50); scene.add(goldPt);
@@ -991,18 +1032,22 @@ const hllPt=new THREE.PointLight(0xC0334A,2,35); hllPt.position.y=-12; scene.add
 const rimL=new THREE.DirectionalLight(0xF5D376,0.4); rimL.position.set(-10,10,5); scene.add(rimL);
 
 // ══════════════════════════════════════════════
-// STARS — two layers for depth
+// STARS — soft glow-disc sprites instead of hard
+// square points, layered for depth and a dreamy bloom
 // ══════════════════════════════════════════════
 function makeStars(count,size,spread,col){
   const geo=new THREE.BufferGeometry();
   const pos=new Float32Array(count*3);
   for(let i=0;i<count*3;i++) pos[i]=(Math.random()-0.5)*spread;
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  return new THREE.Points(geo,new THREE.PointsMaterial({color:col,size,transparent:true,opacity:0.85,sizeAttenuation:true}));
+  return new THREE.Points(geo,new THREE.PointsMaterial({
+    color:col,size,map:TEX.disc,transparent:true,opacity:0.9,sizeAttenuation:true,
+    blending:THREE.AdditiveBlending,depthWrite:false
+  }));
 }
-scene.add(makeStars(2500,0.14,400,0xF5D376));
-scene.add(makeStars(800,0.3,400,0xFFFFFF));
-scene.add(makeStars(400,0.5,200,0xC9A84C));
+scene.add(makeStars(2500,0.22,400,0xF5D376));
+scene.add(makeStars(800,0.42,400,0xFFFFFF));
+scene.add(makeStars(400,0.6,200,0xC9A84C));
 
 // ══════════════════════════════════════════════
 // ATMOSPHERE — fog & sky tint react to altitude
@@ -1034,7 +1079,7 @@ function atmosphereForHeight(y){
 // AMBIENT ATMOSPHERIC PARTICLES — embers / motes / dust
 // drift gently in place, giving each realm a living, breathing feel
 // ══════════════════════════════════════════════
-function makeAmbientParticles(count, yMin, yMax, rSpread, color, size, speed){
+function makeAmbientParticles(count, yMin, yMax, rSpread, color, size, speed, texKey='spark'){
   const geo=new THREE.BufferGeometry();
   const pos=new Float32Array(count*3);
   const speeds=new Float32Array(count);
@@ -1045,19 +1090,41 @@ function makeAmbientParticles(count, yMin, yMax, rSpread, color, size, speed){
     speeds[i]=0.5+Math.random();
   }
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  const mat=new THREE.PointsMaterial({color,size,transparent:true,opacity:0.7,sizeAttenuation:true,blending:THREE.AdditiveBlending,depthWrite:false});
+  const mat=new THREE.PointsMaterial({color,size,map:TEX[texKey],transparent:true,opacity:0.85,sizeAttenuation:true,blending:THREE.AdditiveBlending,depthWrite:false});
   const pts=new THREE.Points(geo,mat);
   pts.userData={speeds,speed,yMin,yMax,baseY:pos.slice()};
   return pts;
 }
 
 // Heaven motes — slow upward-drifting light specks
-const heavenMotes = makeAmbientParticles(260, 3.5, 12.5, 5, 0xD8C8FF, 0.09, 0.25);
+const heavenMotes = makeAmbientParticles(260, 3.5, 12.5, 5, 0xD8C8FF, 0.09, 0.25, 'spark');
 // Hell embers — slow upward-drifting orange sparks (rising heat)
-const hellEmbers = makeAmbientParticles(260, -12, -3.5, 6, 0xFF6A3D, 0.08, 0.3);
+const hellEmbers = makeAmbientParticles(260, -12, -3.5, 6, 0xFF6A3D, 0.08, 0.3, 'spark');
 // Madhya Loka dust — gentle horizontal drifting haze near the human world
-const madhyaDust = makeAmbientParticles(180, -1.5, 1.5, 9, 0xF5D376, 0.06, 0.1);
+const madhyaDust = makeAmbientParticles(180, -1.5, 1.5, 9, 0xF5D376, 0.06, 0.1, 'circle');
 const ambientParticleSystems = [heavenMotes, hellEmbers, madhyaDust];
+
+// Real cloud-puff sprites — soft, photographic, drifting slowly through
+// the heavens and around Madhya Loka, breaking up the flat geometric look
+function makeCloudPuffs(count, yMin, yMax, rSpread, color, baseScale){
+  const group = new THREE.Group();
+  const puffs = [];
+  for(let i=0;i<count;i++){
+    const mat = new THREE.SpriteMaterial({map:TEX.cloud, color, transparent:true, opacity:0.18+Math.random()*0.12, depthWrite:false});
+    const sp = new THREE.Sprite(mat);
+    const scale = baseScale*(0.7+Math.random()*0.8);
+    sp.scale.set(scale,scale*0.6,1);
+    sp.position.set((Math.random()-0.5)*rSpread, yMin+Math.random()*(yMax-yMin), (Math.random()-0.5)*rSpread);
+    group.add(sp);
+    puffs.push({sprite:sp, driftSpeed:0.02+Math.random()*0.03, phase:Math.random()*Math.PI*2});
+  }
+  group.userData={puffs};
+  return group;
+}
+const heavenClouds = makeCloudPuffs(14, 4, 11, 6, 0xE8DCFF, 2.2);
+const madhyaClouds = makeCloudPuffs(10, -0.5, 1.2, 10, 0xFFF0C8, 2.6);
+const hellSmoke = makeCloudPuffs(12, -11, -4, 7, 0x4a1a18, 2.4);
+const cloudSystems = [heavenClouds, madhyaClouds, hellSmoke];
 
 // ══════════════════════════════════════════════
 // GROUPS
@@ -1072,6 +1139,7 @@ const G={
 };
 Object.values(G).forEach(g=>scene.add(g));
 G.lok.add(heavenMotes, hellEmbers, madhyaDust);
+G.lok.add(heavenClouds, madhyaClouds, hellSmoke);
 
 // ══════════════════════════════════════════════
 // HELPER: sprite label
@@ -1243,19 +1311,20 @@ DVIPAS.forEach((d,i)=>{
 const dMeshes=[],sMeshes=[];
 
 DVIPAS.forEach((d,i)=>{
-  // Torus ring
+  // Torus ring — terrain-textured for a real ground/rock look instead of flat colour
   const m=new THREE.Mesh(
     new THREE.TorusGeometry(d.r,0.16,20,100),
-    new THREE.MeshStandardMaterial({color:d.color,emissive:d.color,emissiveIntensity:0.5,metalness:0.4,roughness:0.3})
+    new THREE.MeshStandardMaterial({color:d.color,emissive:d.color,emissiveIntensity:0.35,metalness:0.15,roughness:0.85,map:TEX.terrain})
   );
   m.rotation.x=Math.PI/2;
   G.adh.add(m);
   dMeshes.push(m);
-  // Transparent fill disc
-  G.adh.add(Object.assign(new THREE.Mesh(
-    new THREE.CylinderGeometry(d.r,d.r,0.04,80),
-    new THREE.MeshStandardMaterial({color:d.color,transparent:true,opacity:0.05,roughness:1,depthWrite:false})
-  )));
+  // Filled land disc — textured terrain, subtly tinted per-island
+  const fillMat = new THREE.MeshStandardMaterial({
+    color:d.color, map:TEX.terrain, transparent:true, opacity:0.5, roughness:0.9, depthWrite:false
+  });
+  const fillMesh = new THREE.Mesh(new THREE.CylinderGeometry(d.r,d.r,0.04,80), fillMat);
+  G.adh.add(fillMesh);
   // Label
   const lbl=mkLabel(d.name,d.hex);
   lbl.position.set(d.r+0.6,0.6,0);
@@ -1263,16 +1332,17 @@ DVIPAS.forEach((d,i)=>{
 });
 
 SAMUDRAS.forEach((s,i)=>{
+  // Water-textured ocean rings with real ripple detail instead of flat colour
   const m=new THREE.Mesh(
     new THREE.TorusGeometry(s.r,0.09,12,100),
-    new THREE.MeshStandardMaterial({color:s.color,emissive:s.color,emissiveIntensity:0.35,transparent:true,opacity:0.8,roughness:0.6})
+    new THREE.MeshStandardMaterial({color:s.color,emissive:s.color,emissiveIntensity:0.3,transparent:true,opacity:0.88,roughness:0.25,metalness:0.3,map:TEX.water})
   );
   m.rotation.x=Math.PI/2;
   G.adh.add(m);
   sMeshes.push(m);
 });
 
-// Mount Meru — tapered cone + glow
+// Mount Meru — tapered cone + real lens-flare glow
 const meruCone=new THREE.Mesh(
   new THREE.CylinderGeometry(0.08,0.35,3.5,8),
   new THREE.MeshStandardMaterial({color:0xFFD700,emissive:0xFFD700,emissiveIntensity:1.2,metalness:0.9,roughness:0.05})
@@ -1281,6 +1351,9 @@ meruCone.position.y=1.75;
 G.adh.add(meruCone);
 const meruLight=new THREE.PointLight(0xFFD700,4,8);
 G.adh.add(meruLight);
+const meruFlare = mkLensFlare(0xFFD700, 3);
+meruFlare.position.y=3.4;
+G.adh.add(meruFlare);
 
 // Meru glow sphere
 const meruGlowMesh=new THREE.Mesh(
@@ -1537,6 +1610,9 @@ G.yan.add(binduM);
 const binduL=new THREE.PointLight(0x3ED8B8,4,8);
 binduL.position.y=0.5;
 G.yan.add(binduL);
+const binduFlare = mkLensFlare(0x3ED8B8, 1.8);
+binduFlare.position.y=0.5;
+G.yan.add(binduFlare);
 
 // ══════════════════════════════════════════════
 // MAA LALITA — stylized 3D deity seated at the Bindu
@@ -2341,6 +2417,15 @@ function animate(){
       if(arr[i+1]>sys.userData.yMax) arr[i+1]=sys.userData.yMin;
     }
     posAttr.needsUpdate=true;
+  });
+
+  // Cloud puffs — slow horizontal drift + gentle opacity breathing
+  cloudSystems.forEach(sys=>{
+    sys.userData.puffs.forEach(p=>{
+      p.sprite.position.x += Math.sin(t*p.driftSpeed+p.phase)*0.003;
+      p.sprite.position.z += Math.cos(t*p.driftSpeed*0.7+p.phase)*0.003;
+      p.sprite.material.opacity = 0.18+0.1*Math.sin(t*0.2+p.phase);
+    });
   });
 
   // Beings — float, bob, spin (heaven) or writhe (hell) or sway gently (villagers)
