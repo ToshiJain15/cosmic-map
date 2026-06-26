@@ -19,7 +19,7 @@
   --void:       #04030A;
   --deep:       #080614;
   --surface:    #0E0B1A;
-  --card:       rgba(14,11,26,0.88);
+  --card:       rgba(8,6,16,0.94);
 
   --gold-bright:#F5D376;
   --gold:       #C9A84C;
@@ -30,8 +30,8 @@
   --amethyst:   #7B4FE0;
   --ruby:       #C0334A;
   --teal:       #3ED8B8;
-  --ivory:      #EDE0C4;
-  --ivory-dim:  #8A7D68;
+  --ivory:      #F5EFDD;
+  --ivory-dim:  #C9BFA8;
 
   --border:     rgba(201,168,76,0.18);
   --border-hi:  rgba(201,168,76,0.5);
@@ -332,6 +332,9 @@ a { color: inherit; text-decoration: none; }
   transition: opacity 0.4s;
   width: 90%;
   max-width: 600px;
+  padding: 28px 36px;
+  border-radius: 20px;
+  background: radial-gradient(ellipse at center, rgba(4,3,10,0.55) 0%, rgba(4,3,10,0) 75%);
 }
 #view-banner.show { opacity: 1; }
 .banner-title {
@@ -339,7 +342,7 @@ a { color: inherit; text-decoration: none; }
   font-size: clamp(22px, 5vw, 52px);
   font-weight: 400;
   color: var(--gold-bright);
-  text-shadow: 0 0 60px rgba(201,168,76,0.6), 0 2px 4px rgba(0,0,0,0.8);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.95), 0 4px 18px rgba(0,0,0,0.9), 0 0 40px rgba(201,168,76,0.5);
   line-height: 1.2;
   margin-bottom: 14px;
 }
@@ -347,8 +350,8 @@ a { color: inherit; text-decoration: none; }
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(15px, 2.5vw, 20px);
   font-style: italic;
-  color: var(--ivory-dim);
-  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  color: var(--ivory);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,1);
 }
 
 /* ═══════════════════════════════════════
@@ -903,22 +906,22 @@ a { color: inherit; text-decoration: none; }
 // DATA
 // ══════════════════════════════════════════════
 const DVIPAS = [
-  {name:'Jambudvipa',    color:0x2E8B57, hex:'#2E8B57', desc:'Our world — Bharata Kshetra (Earth). Mount Meru at centre.',  r:1.0},
-  {name:'Dhatakikhanda', color:0x6BAE3C, hex:'#6BAE3C', desc:'Mirror Earth, double size. Own Meru, own time cycle.',        r:2.2},
-  {name:'Pushkara',      color:0xC8B400, hex:'#C8B400', desc:'Half-continent. Outer boundary of human liberation realm.',   r:3.6},
-  {name:'Varunavar',     color:0xE08020, hex:'#E08020', desc:'Fourth continent — beyond the liberation boundary.',           r:5.2},
-  {name:'Ksheeravar',    color:0xD4502A, hex:'#D4502A', desc:'Milk-sea continent. Vast and luminous.',                      r:7.0},
-  {name:'Ghritavar',     color:0xB83040, hex:'#B83040', desc:'Named for the clarified butter ocean surrounding it.',        r:9.0},
-  {name:'Ikshuvar',      color:0x8B2060, hex:'#8B2060', desc:'Outermost continent. Encircles all known creation.',         r:11.2},
+  {name:'Jambudvipa',    color:0x2E8B57, hex:'#2E8B57', labelHex:'#7ED9A6', desc:'Our world — Bharata Kshetra (Earth). Mount Meru at centre.',  r:1.0},
+  {name:'Dhatakikhanda', color:0x6BAE3C, hex:'#6BAE3C', labelHex:'#A8DE7E', desc:'Mirror Earth, double size. Own Meru, own time cycle.',        r:2.2},
+  {name:'Pushkara',      color:0xC8B400, hex:'#C8B400', labelHex:'#F0D84A', desc:'Half-continent. Outer boundary of human liberation realm.',   r:3.6},
+  {name:'Varunavar',     color:0xE08020, hex:'#E08020', labelHex:'#FFAA5C', desc:'Fourth continent — beyond the liberation boundary.',           r:5.2},
+  {name:'Ksheeravar',    color:0xD4502A, hex:'#D4502A', labelHex:'#FF8F66', desc:'Milk-sea continent. Vast and luminous.',                      r:7.0},
+  {name:'Ghritavar',     color:0xB83040, hex:'#B83040', labelHex:'#FF8FA0', desc:'Named for the clarified butter ocean surrounding it.',        r:9.0},
+  {name:'Ikshuvar',      color:0x8B2060, hex:'#8B2060', labelHex:'#E888BC', desc:'Outermost continent. Encircles all known creation.',         r:11.2},
 ];
 const SAMUDRAS = [
-  {name:'Lavana Samudra', color:0x1565C0, hex:'#1565C0', desc:'Salt Ocean. Surrounds Jambudvipa.',       r:1.6},
-  {name:'Kalodadhi',      color:0x0D47A1, hex:'#0D47A1', desc:'Black Water Ocean. Deep and dark.',        r:2.9},
-  {name:'Pushkaroda',     color:0x00695C, hex:'#00695C', desc:'Blue-Lotus Ocean.',                        r:4.4},
-  {name:'Varunoda',       color:0x00796B, hex:'#00796B', desc:'Ocean of the water deity Varuna.',         r:6.1},
-  {name:'Ksheeroda',      color:0x2E7D32, hex:'#2E7D32', desc:'Milk Ocean — churned by gods in Puranas.', r:8.0},
-  {name:'Ghritoda',       color:0x558B2F, hex:'#558B2F', desc:'Clarified Butter Ocean. Luminous.',        r:10.1},
-  {name:'Ikshuvaroda',    color:0x33691E, hex:'#33691E', desc:'Sugarcane Juice Ocean — outermost sea.',  r:12.5},
+  {name:'Lavana Samudra', color:0x1565C0, hex:'#1565C0', labelHex:'#7EB6F5', desc:'Salt Ocean. Surrounds Jambudvipa.',       r:1.6},
+  {name:'Kalodadhi',      color:0x0D47A1, hex:'#0D47A1', labelHex:'#6FA6F0', desc:'Black Water Ocean. Deep and dark.',        r:2.9},
+  {name:'Pushkaroda',     color:0x00695C, hex:'#00695C', labelHex:'#5FD6C4', desc:'Blue-Lotus Ocean.',                        r:4.4},
+  {name:'Varunoda',       color:0x00796B, hex:'#00796B', labelHex:'#5FE0CC', desc:'Ocean of the water deity Varuna.',         r:6.1},
+  {name:'Ksheeroda',      color:0x2E7D32, hex:'#2E7D32', labelHex:'#86D88C', desc:'Milk Ocean — churned by gods in Puranas.', r:8.0},
+  {name:'Ghritoda',       color:0x558B2F, hex:'#558B2F', labelHex:'#A8D87E', desc:'Clarified Butter Ocean. Luminous.',        r:10.1},
+  {name:'Ikshuvaroda',    color:0x33691E, hex:'#33691E', labelHex:'#92CC6E', desc:'Sugarcane Juice Ocean — outermost sea.',  r:12.5},
 ];
 const HEAVENS=[
   {name:'Saudharma',               color:0xB39DDB,y:4.2},
@@ -944,18 +947,18 @@ const HELLS=[
 // ══════════════════════════════════════════════
 const iLeg=document.getElementById('islands-legend');
 DVIPAS.forEach(d=>{
-  iLeg.innerHTML+=`<div class="legend-row"><div class="legend-pip" style="background:${d.hex};color:${d.hex}"></div><span style="color:${d.hex};font-size:11px">${d.name}</span></div>`;
+  iLeg.innerHTML+=`<div class="legend-row"><div class="legend-pip" style="background:${d.hex};color:${d.hex}"></div><span style="color:${d.labelHex};font-size:12px;font-weight:500">${d.name}</span></div>`;
 });
 const oLeg=document.getElementById('oceans-legend');
 SAMUDRAS.forEach(s=>{
-  oLeg.innerHTML+=`<div class="legend-row"><div class="legend-bar" style="background:${s.hex}"></div><span style="color:${s.hex};font-size:11px">${s.name}</span></div>`;
+  oLeg.innerHTML+=`<div class="legend-row"><div class="legend-bar" style="background:${s.hex}"></div><span style="color:${s.labelHex};font-size:12px;font-weight:500">${s.name}</span></div>`;
 });
 const bGrid=document.getElementById('bottom-grid');
 DVIPAS.forEach((d,i)=>{
-  bGrid.innerHTML+=`<div class="info-chip" style="background:${d.hex}18;border:1px solid ${d.hex}44;color:${d.hex}"><div class="info-chip-label">Island ${i+1}</div>${d.name}</div>`;
+  bGrid.innerHTML+=`<div class="info-chip" style="background:${d.hex}22;border:1px solid ${d.hex}66;color:${d.labelHex}"><div class="info-chip-label" style="color:${d.labelHex};opacity:0.75">Island ${i+1}</div>${d.name}</div>`;
 });
 SAMUDRAS.forEach((s,i)=>{
-  bGrid.innerHTML+=`<div class="info-chip" style="background:${s.hex}18;border:1px solid ${s.hex}44;color:${s.hex}"><div class="info-chip-label">Ocean ${i+1}</div>${s.name}</div>`;
+  bGrid.innerHTML+=`<div class="info-chip" style="background:${s.hex}22;border:1px solid ${s.hex}66;color:${s.labelHex}"><div class="info-chip-label" style="color:${s.labelHex};opacity:0.75">Ocean ${i+1}</div>${s.name}</div>`;
 });
 // Mirror into mobile sheet
 ['islands-legend-mobile','oceans-legend-mobile','bottom-grid-mobile'].forEach((id,idx)=>{
@@ -1019,15 +1022,44 @@ Object.values(G).forEach(g=>scene.add(g));
 // ══════════════════════════════════════════════
 function mkLabel(txt,color='#C9A84C',size=220){
   const c=document.createElement('canvas');
-  c.width=size;c.height=44;
+  c.width=size;c.height=52;
   const cx2=c.getContext('2d');
-  cx2.font=`500 ${size>200?14:12}px Inter,sans-serif`;
-  cx2.fillStyle=color;
+  const fontSize = size>200?15:13;
+  cx2.font=`600 ${fontSize}px Inter,sans-serif`;
+  const textW = cx2.measureText(txt.toUpperCase()).width;
+
+  // Dark rounded backing pill so text reads against any 3D backdrop (stars, glow, geometry)
+  const padX=14, padY=8;
+  const pillW = Math.min(size, textW+padX*2);
+  const pillX = size/2 - pillW/2;
+  const pillY = 26-16-padY;
+  const pillH = 32+padY*2-16;
+  cx2.beginPath();
+  const rad=10;
+  cx2.moveTo(pillX+rad,pillY);
+  cx2.arcTo(pillX+pillW,pillY,pillX+pillW,pillY+pillH,rad);
+  cx2.arcTo(pillX+pillW,pillY+pillH,pillX,pillY+pillH,rad);
+  cx2.arcTo(pillX,pillY+pillH,pillX,pillY,rad);
+  cx2.arcTo(pillX,pillY,pillX+pillW,pillY,rad);
+  cx2.closePath();
+  cx2.fillStyle='rgba(4,3,10,0.82)';
+  cx2.fill();
+  cx2.strokeStyle=color+'55';
+  cx2.lineWidth=1;
+  cx2.stroke();
+
+  // Text with dark outline stroke first (for extra legibility), then fill
   cx2.textAlign='center';
-  cx2.letterSpacing='2px';
-  cx2.fillText(txt.toUpperCase(),size/2,28);
+  cx2.textBaseline='middle';
+  cx2.font=`600 ${fontSize}px Inter,sans-serif`;
+  cx2.lineWidth=3;
+  cx2.strokeStyle='rgba(0,0,0,0.9)';
+  cx2.strokeText(txt.toUpperCase(),size/2,26);
+  cx2.fillStyle=color;
+  cx2.fillText(txt.toUpperCase(),size/2,26);
+
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false}));
-  sp.scale.set(size/40,44/40,1);
+  sp.scale.set(size/40,52/40,1);
   return sp;
 }
 
